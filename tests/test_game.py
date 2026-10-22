@@ -70,6 +70,20 @@ def test_draw_is_detected():
     assert game.is_over
 
 
+def test_win_on_the_last_cell_is_a_win_not_a_draw():
+    game = Game()
+    # Final board:  X O X
+    #               O X O
+    #               O X X     X's ninth move (2, 2) completes the diagonal.
+    play_all(
+        game,
+        [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 1), (2, 0), (2, 2)],
+    )
+    assert game.board.is_full()
+    assert game.winner == "X"
+    assert not game.is_draw
+
+
 def test_no_moves_allowed_after_game_over():
     game = Game()
     play_all(game, [(0, 0), (1, 0), (0, 1), (1, 1), (0, 2)])  # X wins
