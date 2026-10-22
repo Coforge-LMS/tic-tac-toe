@@ -55,3 +55,19 @@ This project is a terminal Tic-Tac-Toe game on a 3x3 board that supports two hum
 - **Options considered:** (a) call the global `random` module directly; (b) pass a `random.Random` object into the AI constructor.
 - **Chosen:** (b) inject `random.Random`.
 - **Why:** A seeded `Random` makes Easy's behaviour repeatable in tests (R8), and the assignment forbids tests that depend on unseeded randomness. `main.py` creates a normal unseeded `Random()` for real play.
+
+## What changed
+
+Changes from the plan above, and why.
+
+- **Added `Board.get_mark(row, col)`.** The plan listed only place, remove, empty cells, win and full. But `_grid` is private and `main.py` has to print the board, so it needs a read-only way to see a cell. Tests also use it to compare boards without touching `_grid`.
+- **Hard also uses the injected `Random`.** Decision 4 only mentioned Easy. Hard picks among equally good moves with the same `Random`, so its choices are repeatable in tests too. Hard scores a win as `10 - depth` and a loss as `depth - 10`, so it prefers quicker wins and slower losses.
+- **One game loop for both modes.** The plan treated the two modes separately. `main.py` has a single `play_game(ai=None)`: `None` means two players, otherwise the computer plays O. This removed duplicate input handling.
+- **R12 is now an automated test.** The plan said to check "no `print()` or `input()` outside `main.py`" with a manual `grep`. `tests/test_design.py` now checks `board.py`, `ai.py` and `game.py` on every run.
+- **The tests grew past the first plan.**
+  - **Win lines:** `has_won` is tested on all 8 winning lines. I first tested one row and one column, and a break in the other lines went unnoticed.
+  - **Last-move win:** a win on the 9th move must count as a win, not a draw.
+  - **`main()`:** the mode menu and Ctrl-C / EOF handling are tested, and the board is checked to print after every move.
+  - **Hard (R10):** it is now checked with three seeds, and the test also confirms it really played hundreds of games and undid every move. Before this, a bug in the undo step could make the test pass without searching the whole tree.
+- **Impossible test positions removed.** A review of the tests found positions that can never happen in a real game, such as two X's against two O's with O to move, or three O's with no X. Tests now use legal positions, and the `board_from` helper in `tests/test_ai.py` rejects an impossible layout.
+- **README added** with how to run the game and the tests.
